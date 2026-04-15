@@ -1,0 +1,52 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: student-mgmt-postgres
+    environment:
+      POSTGRES_USER: ${PG_USER:-schooladmin}
+      POSTGRES_PASSWORD: ${PG_PASSWORD:-schoolpassword}
+      POSTGRES_DB: ${PG_DBNAME:-student_management}
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8 --locale=C"
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - student-mgmt-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${PG_USER:-schooladmin}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: student-mgmt-app
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      PG_HOST: postgres
+      PG_USER: ${PG_USER:-schooladmin}
+      PG_PASSWORD: ${PG_PASSWORD:-schoolpassword}
+      PG_DBNAME: ${PG_DBNAME:-student_management}
+      PG_PORT: ${PG_PORT:-5432}
+      PG_SSLMODE: ${PG_SSLMODE:-disable}
+      PG_TIMEZONE: ${PG_TIMEZONE:-UTC}
+    ports:
+      - "8081:8081"
+    networks:
+      - student-mgmt-network
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  student-mgmt-network:
+    driver: bridge
