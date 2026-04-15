@@ -64,6 +64,12 @@ func (db *SchoolDatabase) DeleteStudent(id uint) error {
 	return db.DB.Delete(&models.Student{}, id).Error
 }
 
+func (db *SchoolDatabase) GetAllStudents() ([]models.Student, error) {
+	var students []models.Student
+	err := db.DB.Preload("LegalGuardian").Find(&students).Error
+	return students, err
+}
+
 // Staff CRUD methods
 func (db *SchoolDatabase) CreateStaff(staff *models.Staff) (int64, error) {
 	result := db.DB.Create(staff)

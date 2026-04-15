@@ -38,3 +38,36 @@ func (st *SchoolTools) HandleCreateStudent(ctx context.Context, req *mcp.CallToo
 		},
 	}, nil, nil
 }
+
+// HandleViewStudents handles "view_student" requests to view all students and their guardians
+func (st *SchoolTools) HandleViewStudents(ctx context.Context, req *mcp.CallToolRequest, input any) (*mcp.CallToolResult, any, error) {
+
+	// Retrieve all students from the database
+	students, err := st.DB.GetAllStudents()
+	if err != nil {
+		return nil, nil, fmt.Errorf("failed to retrieve students: %v", err)
+	}
+
+	// Format the response
+	var responseText string
+	if len(students) == 0 {
+		responseText = "No students found in the database."
+	} else {
+		responseText = fmt.Sprintf("Found %d student(s) in the database:\n\n", len(students))
+		for _, student := range students {
+			responseText += fmt.Sprintf("ID: %d\n", student.ID)
+			responseText += fmt.Sprintf("Name: %s %s\n", student.FirstName, student.LastName)
+			responseText += fmt.Sprintf("Email: %s\n", student.Email)
+			if student.LegalGuardian != nil {
+				responseText += fmt.Sprintf("Student: %s %s and their Legal Guardian: %s %s (Email: %s)\n", student.FirstName, student.LastName, student.LegalGuardian.FirstName, student.LegalGuardian.LastName, student.LegalGuardian.Email)
+			}
+			responseText += "---\n"
+		}
+	}
+
+	return &mcp.CallToolResult{
+		Content: []mcp.Content{
+			&mcp.TextContent{Text: responseText},
+		},
+	}, nil, nil
+}

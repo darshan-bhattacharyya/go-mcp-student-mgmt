@@ -20,6 +20,11 @@ func runMCPServer(schoolTools *SchoolTools) {
 		Name:        "add_student",
 	}, schoolTools.HandleCreateStudent)
 
+	mcp.AddTool(server, &mcp.Tool{
+		Description: "View list of all students and their legal guardians in the database",
+		Name:        "view_student",
+	}, schoolTools.HandleViewStudents)
+
 	handler := mcp.NewStreamableHTTPHandler(
 		func(r *http.Request) *mcp.Server { return server },
 		nil,
