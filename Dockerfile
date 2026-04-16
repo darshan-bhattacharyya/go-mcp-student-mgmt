@@ -26,7 +26,7 @@ WORKDIR /root/
 COPY --from=builder /build/student-mgmt .
 
 # Expose port (configurable via environment)
-EXPOSE 8080
+EXPOSE 8081
 
 # Run the application
 CMD ["./student-mgmt"]
